@@ -1,0 +1,87 @@
+{
+  "manifest_version": 3,
+  "name": "BiliRoaming-webX Player",
+  "version": "0.5.0",
+  "description": "B 站区域限制番剧覆盖式播放器",
+  "minimum_chrome_version": "120",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "*://*.bilibili.com/*",
+    "*://*.bilivideo.com/*",
+    "*://*.bilivideo.cn/*",
+    "*://*.hdslb.com/*",
+    "*://comment.bilibili.com/*",
+    "https://*/*",
+    "http://*/*"
+  ],
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.bilibili.com/bangumi/play/*",
+        "*://www.bilibili.com/bangumi/media/md*"
+      ],
+      "js": [
+        "src/inject/main.js"
+      ],
+      "world": "MAIN",
+      "run_at": "document_start",
+      "all_frames": false
+    },
+    {
+      "matches": [
+        "*://www.bilibili.com/bangumi/play/*",
+        "*://www.bilibili.com/bangumi/media/md*"
+      ],
+      "js": [
+        "vendor/dash.all.min.js",
+        "vendor/artplayer.js",
+        "vendor/artplayer-plugin-dash-control.js",
+        "vendor/artplayer-plugin-danmuku.js",
+        "vendor/artplayer-plugin-document-pip.js",
+        "src/content/content.js"
+      ],
+      "world": "ISOLATED",
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "BiliRoaming-webX Player",
+    "default_popup": "src/popup/popup.html"
+  },
+  "options_page": "src/options/options.html",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/app.mjs",
+        "src/content/bridge.mjs",
+        "src/content/player/dashMpdBuilder.mjs",
+        "src/content/player/mountPlayer.mjs",
+        "src/content/subtitle/biliSubtitle.mjs",
+        "src/content/subtitle/subtitlePlugin.mjs",
+        "vendor/zhConvert.mjs",
+        "src/common/constants.mjs",
+        "src/common/logger.mjs",
+        "src/common/dom.mjs",
+        "vendor/dash.all.min.js",
+        "vendor/dash.all.min.mjs",
+        "vendor/artplayer.js",
+        "vendor/artplayer-plugin-dash-control.js",
+        "vendor/artplayer-plugin-danmuku.js",
+        "vendor/artplayer-plugin-document-pip.js"
+      ],
+      "matches": [
+        "*://*.bilibili.com/*"
+      ]
+    }
+  ]
+}
