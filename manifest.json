@@ -41,8 +41,12 @@
         "*://www.bilibili.com/bangumi/play/*",
         "*://www.bilibili.com/bangumi/media/md*"
       ],
+      "css": [
+        "vendor/xgplayer.min.css"
+      ],
       "js": [
         "vendor/dash.all.min.js",
+        "vendor/xgplayer.min.js",
         "vendor/artplayer.js",
         "vendor/artplayer-plugin-dash-control.js",
         "vendor/artplayer-plugin-danmuku.js",
@@ -74,6 +78,8 @@
         "src/common/dom.mjs",
         "vendor/dash.all.min.js",
         "vendor/dash.all.min.mjs",
+        "vendor/xgplayer.min.js",
+        "vendor/xgplayer.min.css",
         "vendor/artplayer.js",
         "vendor/artplayer-plugin-dash-control.js",
         "vendor/artplayer-plugin-danmuku.js",

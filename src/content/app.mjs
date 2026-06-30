@@ -123,6 +123,8 @@ async function handleStart(payload, reason) {
       enabled: !!cfg.enabled,
       area: cfg.area || '',
       clientMode: cfg.clientMode || '',
+      playerEngine: cfg.playerEngine || '',
+      externalInterpolation: !!cfg.externalInterpolation,
       serverBaseUrl: cfg.serverBaseUrl || '',
     };
     publishDebug({

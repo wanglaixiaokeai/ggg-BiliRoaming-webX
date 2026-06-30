@@ -20,6 +20,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   // 旧 PHP 后端在收到这些头时会返回 code=-15，需要在 popup 关闭它。
   webRoamingHeaders: true,
   accessKey: '',
+  playerEngine: 'xgplayer',
+  externalInterpolation: true,
   defaultQn: '80',
   defaultCodec: 'hevc',
   defaultAudioId: 'auto',
