@@ -27,6 +27,7 @@ import { BRX } from '../common/constants.mjs';
 import { createLogger } from '../common/logger.mjs';
 import { stripAreaLimitUi, unhideCommentModule, switchBiliComments } from '../common/dom.mjs';
 import { PageBridge, sendRuntime } from './bridge.mjs';
+import { installAnimeCatalogPanel } from './catalog/animeCatalog.mjs';
 import { mountPlayer } from './player/mountPlayer.mjs';
 
 const log = createLogger('[BRX-Player CONTENT]');
@@ -91,6 +92,7 @@ export async function startContentApp() {
   publishDebug({ state: 'content-started' });
   ensureEpisodeHighlightStyle();
   installEpisodeHighlightObserver();
+  installAnimeCatalogPanel(log);
 
   const bridge = new PageBridge(log);
   bridge.on(BRX.START, (p) => handleStart(p, 'auto'));
@@ -123,8 +125,6 @@ async function handleStart(payload, reason) {
       enabled: !!cfg.enabled,
       area: cfg.area || '',
       clientMode: cfg.clientMode || '',
-      playerEngine: cfg.playerEngine || '',
-      externalInterpolation: !!cfg.externalInterpolation,
       serverBaseUrl: cfg.serverBaseUrl || '',
     };
     publishDebug({

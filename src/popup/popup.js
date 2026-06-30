@@ -3,7 +3,7 @@
 // accessKey 读取：优先用 chrome.tabs.sendMessage 走 content script，回退到 chrome.scripting 直接执行。
 import { DEFAULT_CONFIG } from '../common/constants.mjs';
 
-const ids = ['enabled', 'serverBaseUrl', 'clientMode', 'area', 'webRoamingHeaders', 'accessKey', 'playerEngine', 'externalInterpolation', 'defaultQn', 'defaultCodec', 'defaultAudioId'];
+const ids = ['enabled', 'serverBaseUrl', 'clientMode', 'area', 'webRoamingHeaders', 'accessKey', 'defaultQn', 'defaultCodec', 'defaultAudioId'];
 const $ = (id) => document.getElementById(id);
 
 function setStatus(msg, isError = false) {

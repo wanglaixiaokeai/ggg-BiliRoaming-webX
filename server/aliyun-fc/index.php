@@ -8,6 +8,7 @@ function send_cors(): void {
     header('Access-Control-Allow-Headers: Content-Type,Accept,Origin,Referer,User-Agent,Range,x-from-biliroaming,platform-from-biliroaming');
     header('Access-Control-Expose-Headers: Content-Length,Content-Range,Accept-Ranges,Content-Type');
     header('Access-Control-Max-Age: 86400');
+    header('Content-Disposition: inline');
 }
 
 function request_path(): string {
@@ -131,7 +132,7 @@ $routes = [
     '/pgc/player/api/playurl' => 'https://api.bilibili.com/pgc/player/api/playurl',
     '/pgc/view/web/season' => 'https://api.bilibili.com/pgc/view/web/season',
     '/pgc/view/web/ep/list' => 'https://api.bilibili.com/pgc/view/web/ep/list',
-    '/x/web-interface/search/type' => 'https://api.bilibili.com/x/web-interface/search/type',
+    '/pgc/season/index/result' => 'https://api.bilibili.com/pgc/season/index/result',
     '/x/v2/subtitle/web/view' => 'https://api.bilibili.com/x/v2/subtitle/web/view',
 ];
 
@@ -146,4 +147,3 @@ if (isset($routes[$path])) {
 }
 
 respond_json(404, ['code' => 404, 'message' => 'unsupported path', 'path' => $path]);
-

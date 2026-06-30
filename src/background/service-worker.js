@@ -5,6 +5,7 @@
 //   - GET_CONFIG / SET_CONFIG — 读写 chrome.storage.sync 配置。
 //   - FETCH_PLAYURL — 根据 clientMode (web/app) 分发到 fetch-web.js / fetch-app.js。
 //   - FETCH_EP_INFO — PGC 分集元数据 (aid/cid/bvid/duration) 补全。
+//   - FETCH_SEASON_INDEX — 通过自建大陆服务端补 anime 页被过滤的入口。
 //   - FETCH_TEXT — 通用 fetch 透传（用于字幕 json 等）。
 //
 // 注意：所有外部 HTTP 都在这里发起，content world 不直接发请求，
@@ -26,6 +27,7 @@ async function handleAction(action, payload) {
   if (action === 'SET_CONFIG')   return setConfig(payload);
   if (action === 'FETCH_PLAYURL') return fetchPlayurl(payload.context || {});
   if (action === 'FETCH_EP_INFO') return fetchEpInfo(payload.epId);
+  if (action === 'FETCH_SEASON_INDEX') return fetchSeasonIndex(payload || {});
   if (action === 'FETCH_TEXT')   return fetchText(payload.url);
   throw new Error('Unknown action: ' + action);
 }
@@ -39,10 +41,23 @@ async function getConfig() {
     merged.area = 'cn';
     merged.clientMode = 'web';
   }
+  // 这台 Windows/Chrome 环境实测 AVC 可能黑屏，HEVC 正常；把旧版 AVC 偏好迁到 HEVC。
+  const codecPreferenceVersion = Number(merged.codecPreferenceVersion || 0);
+  if (!merged.defaultCodec || (String(merged.defaultCodec || '').toLowerCase() === 'avc' && codecPreferenceVersion < 2)) {
+    merged.defaultCodec = 'hevc';
+    merged.codecPreferencePinned = false;
+    merged.codecPreferenceVersion = 2;
+    chrome.storage.sync.set({ defaultCodec: 'hevc', codecPreferencePinned: false, codecPreferenceVersion: 2 }).catch(() => {});
+  }
   return merged;
 }
 async function setConfig(patch) {
-  await chrome.storage.sync.set(patch || {});
+  const next = Object.assign({}, patch || {});
+  if (Object.prototype.hasOwnProperty.call(next, 'defaultCodec')) {
+    next.codecPreferencePinned = true;
+    next.codecPreferenceVersion = 2;
+  }
+  await chrome.storage.sync.set(next);
   return getConfig();
 }
 
@@ -106,4 +121,54 @@ async function fetchText(url) {
   const resp = await fetch(url, { credentials: 'include' });
   const text = await resp.text();
   return { ok: resp.ok, status: resp.status, text, message: resp.ok ? '' : 'HTTP ' + resp.status };
+}
+
+// ====== Anime catalog/search ======
+async function fetchSeasonIndex(payload) {
+  const page = clampInt(payload.page, 1, 999, 1);
+  const pageSize = clampInt(payload.pageSize, 1, 50, 18);
+  const params = {
+    st: '1',
+    season_type: '1',
+    type: '1',
+    page: String(page),
+    pagesize: String(pageSize),
+    order: String(payload.order || '3'),
+    sort: String(payload.sort || '0'),
+    season_version: '-1',
+    area: '-1',
+    is_finish: '-1',
+    copyright: '-1',
+    season_status: '-1',
+    season_month: '-1',
+    year: '-1',
+    style_id: '-1',
+  };
+  const keyword = String(payload.keyword || '').trim();
+  if (keyword) params.keyword = keyword;
+  return fetchServerJson('/pgc/season/index/result', params);
+}
+
+async function fetchServerJson(path, params) {
+  const cfg = await getConfig();
+  const base = String(cfg.serverBaseUrl || '').replace(/\/+$/, '');
+  if (!base) throw new Error('请先在 BRX 设置里填写自建大陆服务端地址');
+  const qs = new URLSearchParams(params);
+  const resp = await fetch(base + path + '?' + qs.toString(), {
+    headers: { 'Accept': 'application/json,text/plain,*/*' },
+  });
+  const text = await resp.text();
+  let json = null;
+  try { json = JSON.parse(text); } catch (_) {}
+  if (!resp.ok) {
+    throw new Error(`HTTP ${resp.status}: ${String(text || '').slice(0, 180)}`);
+  }
+  if (!json) throw new Error('服务端返回的不是 JSON');
+  return json;
+}
+
+function clampInt(value, min, max, fallback) {
+  const n = Number.parseInt(value, 10);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
 }

@@ -18,7 +18,7 @@ php -S 0.0.0.0:9000 index.php
 - `/pgc/player/api/playurl`
 - `/pgc/view/web/season`
 - `/pgc/view/web/ep/list`
-- `/x/web-interface/search/type`
+- `/pgc/season/index/result`
 - `/x/v2/subtitle/web/view`
 - `/media?url=...`
 

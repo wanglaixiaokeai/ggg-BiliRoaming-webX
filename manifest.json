@@ -39,14 +39,11 @@
     {
       "matches": [
         "*://www.bilibili.com/bangumi/play/*",
-        "*://www.bilibili.com/bangumi/media/md*"
-      ],
-      "css": [
-        "vendor/xgplayer.min.css"
+        "*://www.bilibili.com/bangumi/media/md*",
+        "*://www.bilibili.com/anime*"
       ],
       "js": [
         "vendor/dash.all.min.js",
-        "vendor/xgplayer.min.js",
         "vendor/artplayer.js",
         "vendor/artplayer-plugin-dash-control.js",
         "vendor/artplayer-plugin-danmuku.js",
@@ -68,6 +65,7 @@
       "resources": [
         "src/content/app.mjs",
         "src/content/bridge.mjs",
+        "src/content/catalog/animeCatalog.mjs",
         "src/content/player/dashMpdBuilder.mjs",
         "src/content/player/mountPlayer.mjs",
         "src/content/subtitle/biliSubtitle.mjs",
@@ -78,8 +76,6 @@
         "src/common/dom.mjs",
         "vendor/dash.all.min.js",
         "vendor/dash.all.min.mjs",
-        "vendor/xgplayer.min.js",
-        "vendor/xgplayer.min.css",
         "vendor/artplayer.js",
         "vendor/artplayer-plugin-dash-control.js",
         "vendor/artplayer-plugin-danmuku.js",

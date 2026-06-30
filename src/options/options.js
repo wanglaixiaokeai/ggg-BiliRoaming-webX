@@ -4,7 +4,7 @@
 // 通过 chrome.runtime.sendMessage 读写 background 的配置。
 import { DEFAULT_CONFIG } from '../common/constants.mjs';
 
-const ids = ['enabled', 'serverBaseUrl', 'clientMode', 'area', 'webRoamingHeaders', 'accessKey', 'playerEngine', 'externalInterpolation', 'defaultQn', 'defaultCodec', 'defaultAudioId'];
+const ids = ['enabled', 'serverBaseUrl', 'clientMode', 'area', 'webRoamingHeaders', 'accessKey', 'defaultQn', 'defaultCodec', 'defaultAudioId'];
 const $ = (id) => document.getElementById(id);
 
 function setStatus(msg, isError = false) {

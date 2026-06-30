@@ -37,7 +37,8 @@ export function uniqueQualities(videos) {
 }
 
 export function uniqueCodecs(videos) {
-  const set = new Set((videos || []).map(codecGroup).filter(Boolean));
+  const source = playableVideoStreams(videos);
+  const set = new Set((source.length ? source : (videos || [])).map(codecGroup).filter(Boolean));
   return ['auto', ...set].map((id) => ({ id, label: id === 'auto' ? '自动编码' : id.toUpperCase() }));
 }
 
@@ -51,12 +52,63 @@ export function audioOptions(audios) {
   ];
 }
 
-function codecGroup(v) {
+export function codecGroup(v) {
   const c = String(v.codecs || '').toLowerCase();
   if (c.includes('av01')) return 'av1';
   if (c.includes('hev') || c.includes('hvc')) return 'hevc';
   if (c.includes('avc')) return 'avc';
   return c.split('.')[0] || 'unknown';
+}
+
+export function isVideoStreamSupported(v) {
+  const codec = String(v?.codecs || '').trim();
+  if (!codec) return true;
+  const mime = String(v?.mimeType || v?.mime_type || 'video/mp4').trim() || 'video/mp4';
+  const mediaSource = globalThis.MediaSource || globalThis.WebKitMediaSource;
+  if (!mediaSource?.isTypeSupported) return true;
+  try {
+    return mediaSource.isTypeSupported(`${mime}; codecs="${codec}"`);
+  } catch (_) {
+    return true;
+  }
+}
+
+export function playableVideoStreams(videos) {
+  return (videos || []).filter(isVideoStreamSupported);
+}
+
+export function bestSupportedCodec(videos, preferred = 'auto') {
+  const playable = playableVideoStreams(videos);
+  const source = playable.length ? playable : (videos || []);
+  const available = new Set(source.map(codecGroup).filter(Boolean));
+  const wanted = String(preferred || 'auto').toLowerCase();
+  if (wanted !== 'auto' && available.has(wanted)) return wanted;
+  for (const codec of ['hevc', 'avc', 'av1']) {
+    if (available.has(codec)) return codec;
+  }
+  return wanted === 'auto' ? 'auto' : (available.values().next().value || 'auto');
+}
+
+export function bestQualityForCodec(videos, codec = 'avc') {
+  const playable = playableVideoStreams(videos);
+  const source = playable.length ? playable : (videos || []);
+  const wanted = String(codec || 'auto').toLowerCase();
+  const candidates = wanted === 'auto' ? source : source.filter((v) => codecGroup(v) === wanted);
+  const fallback = candidates.length ? candidates : source;
+  const best = [...fallback].sort((a, b) => Number(b.id || 0) - Number(a.id || 0))[0];
+  return best ? String(best.id || 'auto') : 'auto';
+}
+
+export function hasVideoStream(dash, selection = {}) {
+  const qn = String(selection.qn || 'auto');
+  const codec = String(selection.codec || 'auto');
+  const playable = playableVideoStreams(dash.video || []);
+  const source = playable.length ? playable : (dash.video || []);
+  return source.some((v) => {
+    if (qn !== 'auto' && String(v.id) !== qn) return false;
+    if (codec !== 'auto' && codecGroup(v) !== codec) return false;
+    return true;
+  });
 }
 
 function esc(s) {
@@ -89,12 +141,15 @@ export function patchM4sUrl(url) {
 export function selectStreams(dash, selection = {}) {
   const qn = String(selection.qn || 'auto');
   const codec = String(selection.codec || 'auto');
-  let videos = [...(dash.video || [])];
+  const playable = playableVideoStreams(dash.video || []);
+  const sourceVideos = playable.length ? playable : (dash.video || []);
+  let videos = [...sourceVideos];
   if (qn !== 'auto')    videos = videos.filter((v) => String(v.id) === qn);
   if (codec !== 'auto') videos = videos.filter((v) => codecGroup(v) === codec);
-  // 过滤后为空时退化：先放掉 codec 限制，再放掉 qn 限制，最后取全集。
-  if (!videos.length && qn !== 'auto') videos = (dash.video || []).filter((v) => String(v.id) === qn);
-  if (!videos.length) videos = dash.video || [];
+  // 过滤后为空时优先保留 codec 限制，避免某个清晰度缺目标编码时退到不兼容编码黑屏。
+  if (!videos.length && codec !== 'auto') videos = sourceVideos.filter((v) => codecGroup(v) === codec);
+  if (!videos.length && qn !== 'auto') videos = sourceVideos.filter((v) => String(v.id) === qn);
+  if (!videos.length) videos = sourceVideos;
 
   let audios = [...(dash.audio || dash.dolby?.audio || [])];
   if (selection.audioId && selection.audioId !== 'auto') {
