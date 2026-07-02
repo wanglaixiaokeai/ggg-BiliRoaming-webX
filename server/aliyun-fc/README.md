@@ -14,6 +14,8 @@ php -S 0.0.0.0:9000 index.php
 
 ## Routes
 
+Browser extension routes, handled by `index.php`:
+
 - `/pgc/player/web/playurl`
 - `/pgc/player/api/playurl`
 - `/pgc/view/web/season`
@@ -31,5 +33,28 @@ Set the extension server URL to your own Function Compute public URL, for exampl
 ```text
 https://your-function-region.fcapp.run
 ```
+
+## PotPlayer fallback
+
+`potplayer.php` is a simple fallback entry for the Chen310 PotPlayer plugin. It keeps the browser route untouched, forces PotPlayer playurl requests to combined `durl` mode first, and rewrites returned media URLs through its own `/media` proxy. Combined `durl` streams may be limited to lower quality.
+
+Upload both files:
+
+- `index.php`
+- `potplayer.php`
+
+Keep the startup command unchanged:
+
+```bash
+php -S 0.0.0.0:9000 index.php
+```
+
+Set the PotPlayer plugin host to:
+
+```text
+https://your-function-region.fcapp.run/potplayer.php
+```
+
+For higher quality DASH/HEVC playback, use the dedicated `../aliyun-fc-potplayer` package instead.
 
 Do not commit personal service URLs or account access keys.

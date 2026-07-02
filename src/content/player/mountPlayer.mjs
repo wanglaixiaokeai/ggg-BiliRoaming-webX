@@ -46,6 +46,7 @@ async function mountArtPlayer({ playurl, context, config, log }) {
   root.className = 'brx-player-root brx-artplayer-root';
   root.innerHTML = `
     <div class="brx-artplayer-box"></div>
+    <button class="brx-pp-button" type="button" title="用 PotPlayer 打开">PP</button>
     <div class="brx-status">BiliRoaming-webX ArtPlayer</div>
   `;
   const style = document.createElement('style');
@@ -168,6 +169,7 @@ async function mountArtPlayer({ playurl, context, config, log }) {
   art.on('ready', async () => {
     installResizeRelay();
     installDanmakuPersistence();
+    installPotPlayerButton();
     window.__BRX_PLAYER_DEBUG__ = Object.assign(window.__BRX_PLAYER_DEBUG__ || {}, { art, dashPlayer });
   });
 
@@ -246,6 +248,32 @@ async function mountArtPlayer({ playurl, context, config, log }) {
       if (codec !== current && available.has(codec)) return codec;
     }
     return current === 'auto' ? '' : 'auto';
+  }
+
+  function installPotPlayerButton() {
+    const btn = root.querySelector('.brx-pp-button');
+    if (!btn) return;
+    // ArtPlayer 已经 ready，直接显示按钮
+    btn.style.display = '';
+    btn.addEventListener('click', (event) => {
+      event.stopPropagation();
+      event.preventDefault();
+      openInPotPlayer();
+    });
+  }
+
+  async function openInPotPlayer() {
+    status.textContent = '正在用 PotPlayer 打开...';
+    status.style.opacity = '1';
+    try {
+      // 传 B 站页面 URL，让 PotPlayer 的 Bilibili 插件自行解析播放
+      const pageUrl = location.href;
+      window.open('brxpp://play?url=' + encodeURIComponent(pageUrl), '_blank');
+      status.textContent = '已唤起 PotPlayer';
+    } catch (err) {
+      status.textContent = 'PotPlayer 失败: ' + String(err?.message || err).slice(0, 80);
+    }
+    setTimeout(() => { status.style.opacity = '0'; }, 3500);
   }
 
   function createArtPlugins() {
@@ -368,6 +396,7 @@ async function mountMp4Player({ playurl, context, config, log }) {
   root.className = 'brx-player-root brx-artplayer-root';
   root.innerHTML = `
     <div class="brx-artplayer-box"></div>
+    <button class="brx-pp-button" type="button" title="用 PotPlayer 打开">PP</button>
     <div class="brx-status">BiliRoaming-webX MP4</div>
   `;
   const style = document.createElement('style');
@@ -416,12 +445,22 @@ async function mountMp4Player({ playurl, context, config, log }) {
     status.textContent = `${mp4Options[0].label} / MP4`;
     status.style.opacity = '1';
     setTimeout(() => { status.style.opacity = '0'; }, 1800);
+    const btn = root.querySelector('.brx-pp-button');
+    if (btn) { btn.style.display = ''; btn.addEventListener('click', (e) => { e.stopPropagation(); e.preventDefault(); openPotPlayerMp4(); }); }
     window.__BRX_PLAYER_DEBUG__ = Object.assign(window.__BRX_PLAYER_DEBUG__ || {}, {
       art,
       mp4Fallback: true,
       context,
     });
   });
+
+  function openPotPlayerMp4() {
+    status.textContent = '正在用 PotPlayer 打开...'; status.style.opacity = '1';
+    window.open('brxpp://play?url=' + encodeURIComponent(location.href), '_blank');
+    status.textContent = '已唤起 PotPlayer';
+    setTimeout(() => { status.style.opacity = '0'; }, 3500);
+  }
+
   art.on('error', (err) => {
     status.textContent = 'MP4 播放错误: ' + String(err && err.message || err).slice(0, 120);
     status.style.opacity = '1';
@@ -580,5 +619,5 @@ function installPlayerEventFence(root) {
 }
 
 function cssText() {
-  return `.brx-player-root{position:absolute;inset:0;z-index:999;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.brx-artplayer-box{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;padding-top:0!important;background:#000}.brx-artplayer-box .artplayer{width:100%!important;height:100%!important}.brx-artplayer-box video::cue{font-size:28px;color:#fff;background:rgba(0,0,0,.28);text-shadow:#000 1px 0 2px,#000 0 1px 2px,#000 -1px 0 2px,#000 0 -1px 2px}.brx-status{position:absolute;left:14px;top:12px;z-index:35;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:6px;transition:opacity .35s}`;
+  return `.brx-player-root{position:absolute;inset:0;z-index:999;background:#000;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.brx-artplayer-box{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;padding-top:0!important;background:#000}.brx-artplayer-box .artplayer{width:100%!important;height:100%!important}.brx-artplayer-box video::cue{font-size:28px;color:#fff;background:rgba(0,0,0,.28);text-shadow:#000 1px 0 2px,#000 0 1px 2px,#000 -1px 0 2px,#000 0 -1px 2px}.brx-status{position:absolute;left:14px;top:12px;z-index:35;background:rgba(0,0,0,.55);padding:6px 10px;border-radius:6px;transition:opacity .35s}.brx-pp-button{position:absolute;right:14px;top:12px;z-index:36;border:1px solid rgba(255,255,255,.22);border-radius:6px;background:rgba(0,0,0,.62);color:#fff;font-size:12px;line-height:24px;padding:0 10px;cursor:pointer}.brx-pp-button:hover{background:rgba(0,174,236,.24);border-color:#00aeec}`;
 }
