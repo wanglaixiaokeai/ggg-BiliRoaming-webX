@@ -2,6 +2,8 @@
 
 Dedicated PHP runtime package for the Chen310 Bilibili PotPlayer plugin.
 
+Full Chinese deployment guide: [`../ALIYUN_FC_PHP.md`](../ALIYUN_FC_PHP.md)
+
 ## Files
 
 - `bootstrap`

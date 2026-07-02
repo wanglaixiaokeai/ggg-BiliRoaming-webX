@@ -2,6 +2,8 @@
 
 This directory contains a minimal PHP HTTP server entry for Aliyun Function Compute custom runtime.
 
+Full Chinese deployment guide: [`../ALIYUN_FC_PHP.md`](../ALIYUN_FC_PHP.md)
+
 ## Runtime
 
 - Runtime: PHP 8.1 custom runtime

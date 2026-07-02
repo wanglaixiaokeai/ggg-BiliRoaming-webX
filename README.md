@@ -201,6 +201,8 @@ playwright-cli open https://www.bilibili.com/bangumi/play/ss44467/ --headed --pe
 
 > 💡 access_key 不会上传到任何第三方服务，全部存在本地 `chrome.storage.sync`。
 
+自建阿里云 PHP 服务端请看 [`server/ALIYUN_FC_PHP.md`](./server/ALIYUN_FC_PHP.md)。里面分开写了浏览器扩展服务和 PotPlayer 专用服务的上传目录、启动命令、监听端口、触发器设置和常见问题。
+
 ### ⚠️ 关于 App 模式（暂时不可用）
 
 `App 模式`（即走 B 站 Android 端 `appkey` + `appsec` 签名通道）
